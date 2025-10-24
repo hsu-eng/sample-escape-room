@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haunted Equation Escape</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #000;
+      color: #f5f5f5;
+    }
+    h1, h2, h3 {
+      color: #e74c3c;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    .section {
+      display: none;
+      padding: 30px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .section img {
+      width: 100%;
+      max-height: 45vh;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .equations {
+      text-align: left;
+      margin: 20px auto;
+      display: inline-block;
+      font-size: 1.1em;
+    }
+    .equations li {
+      margin-bottom: 5px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 18px;
+      width: 200px;
+      border-radius: 4px;
+      border: 1px solid #e74c3c;
+      background-color: #111;
+      color: #f5f5f5;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #e74c3c;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #c0392b;
+    }
+    .decoder {
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #aaa;
+    }
+    .restart {
+      margin-top: 20px;
+    }
+  </style>
+  <script>
+    // Passwords for each section in order
+    const passwords = ['SOLVE', 'RUN', 'BREATH', 'ESCAPE'];
+    // Show first section on load
+    window.onload = function() {
+      document.getElementById('section1').style.display = 'block';
+    };
+    // Check a password for a given section index
+    function checkPassword(idx) {
+      const input = document.getElementById('password' + (idx + 1));
+      const val = (input.value || '').trim().toUpperCase();
+      if (val === passwords[idx]) {
+        // Hide current section
+        document.getElementById('section' + (idx + 1)).style.display = 'none';
+        // If there is a next section, show it; otherwise show success
+        if (idx + 1 < passwords.length) {
+          document.getElementById('section' + (idx + 2)).style.display = 'block';
+        } else {
+          document.getElementById('section_success').style.display = 'block';
+        }
+      } else {
+        // Wrong: show fail section
+        document.getElementById('section' + (idx + 1)).style.display = 'none';
+        document.getElementById('section_fail').style.display = 'block';
+      }
+    }
+    // Restart the escape room
+    function restart() {
+      // Hide all sections
+      const secs = document.querySelectorAll('.section');
+      secs.forEach(sec => sec.style.display = 'none');
+      // Clear all password fields
+      for (let i = 1; i <= passwords.length; i++) {
+        const field = document.getElementById('password' + i);
+        if (field) field.value = '';
+      }
+      // Show first section again
+      document.getElementById('section1').style.display = 'block';
+    }
+  </script>
+</head>
+<body>
+  <!-- Section 1: The Awakening -->
+  <div id="section1" class="section">
+    <div class="content">
+      <h1>Scene&nbsp;1: The Awakening</h1>
+      <img src="scene1.png" alt="Dark classroom">
+      <p>You wake up at your desk in a dark, empty classroom. The clock reads <strong>3:33&nbsp;a.m.</strong>. The door won’t budge. A flickering message on the board reads:</p>
+      <p style="font-size:1.3em; color:#e74c3c;">"Solve it before it finds you."</p>
+      <p>Below the message, several equations have appeared. Solve each equation for <em>x</em>, convert the number to a letter using <em>A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, ...</em>, and unscramble the letters to form the password.</p>
+      <ul class="equations">
+        <li>1.&nbsp;3x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;50</li>
+        <li>2.&nbsp;2x&nbsp;+&nbsp;5&nbsp;=&nbsp;35</li>
+        <li>3.&nbsp;4x&nbsp;&minus;&nbsp;8&nbsp;=&nbsp;40</li>
+        <li>4.&nbsp;x&nbsp;/&nbsp;2&nbsp;+&nbsp;9&nbsp;=&nbsp;20</li>
+        <li>5.&nbsp;3x&nbsp;&minus;&nbsp;4&nbsp;=&nbsp;11</li>
+      </ul>
+      <p>Type the five‑letter password below to unlock the door:</p>
+      <input id="password1" type="text" placeholder="Password">
+      <button onclick="checkPassword(0)">Unlock</button>
+      <div class="decoder">
+        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: The Hallway of Echoes -->
+  <div id="section2" class="section">
+    <div class="content">
+      <h1>Scene&nbsp;2: The Hallway of Echoes</h1>
+      <img src="scene2.png" alt="Dark hallway">
+      <p>The door creaks open. A red‑lit hallway stretches into the fog. You hear something dragging in the distance. Messages scrawled on the lockers whisper:</p>
+      <p style="font-size:1.2em; color:#e74c3c;">"It knows your mistakes."</p>
+      <p>On the wall, more equations appear. Solve them, convert the numbers to letters, and unscramble to find the three‑letter password.</p>
+      <ul class="equations">
+        <li>1.&nbsp;2&nbsp;/&nbsp;x&nbsp;=&nbsp;1&nbsp;/&nbsp;9</li>
+        <li>2.&nbsp;x&nbsp;/&nbsp;7&nbsp;=&nbsp;3</li>
+        <li>3.&nbsp;4&nbsp;/&nbsp;x&nbsp;=&nbsp;2&nbsp;/&nbsp;7</li>
+      </ul>
+      <p>Type the password to hurry down the hall:</p>
+      <input id="password2" type="text" placeholder="Password">
+      <button onclick="checkPassword(1)">Continue</button>
+      <div class="decoder">
+        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: The Lab Test -->
+  <div id="section3" class="section">
+    <div class="content">
+      <h1>Scene&nbsp;3: The Lab Test</h1>
+      <img src="scene3.png" alt="Haunted classroom">
+      <p>You duck into a lab to hide. Papers float through the air, and you swear you see a shadow looming behind you. A cold voice from the intercom crackles:</p>
+      <p style="font-size:1.2em; color:#e74c3c;">"Every wrong answer brings me closer."</p>
+      <p>Solve each equation below. Convert each <em>x</em> value to a letter. Unscramble the six letters to find the password that will unlock the next door.</p>
+      <ul class="equations">
+        <li>1.&nbsp;5x&nbsp;&minus;&nbsp;1&nbsp;=&nbsp;9</li>
+        <li>2.&nbsp;3x&nbsp;&minus;&nbsp;10&nbsp;=&nbsp;44</li>
+        <li>3.&nbsp;2x&nbsp;&minus;&nbsp;10&nbsp;=&nbsp;0</li>
+        <li>4.&nbsp;x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;&minus;6</li>
+        <li>5.&nbsp;5x&nbsp;+&nbsp;10&nbsp;=&nbsp;110</li>
+        <li>6.&nbsp;3x&nbsp;+&nbsp;1&nbsp;=&nbsp;25</li>
+      </ul>
+      <p>Type the six‑letter password to escape the lab:</p>
+      <input id="password3" type="text" placeholder="Password">
+      <button onclick="checkPassword(2)">Unlock</button>
+      <div class="decoder">
+        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: The Final Problem -->
+  <div id="section4" class="section">
+    <div class="content">
+      <h1>Scene&nbsp;4: The Final Problem</h1>
+      <img src="scene4.png" alt="Floating papers and monster">
+      <p>The final classroom door slams shut behind you. Papers whirl around as if caught in a storm. On a desk in front of you glows one last set of equations. A shadow blocks the only exit. The voice whispers:</p>
+      <p style="font-size:1.2em; color:#e74c3c;">"One last test. Get it right… or repeat forever."</p>
+      <p>Solve each equation, convert the numbers to letters, and unscramble the six letters to find the final password.</p>
+      <ul class="equations">
+        <li>1.&nbsp;x&nbsp;/&nbsp;2&nbsp;+&nbsp;7&nbsp;=&nbsp;9.5</li>
+        <li>2.&nbsp;2x&nbsp;+&nbsp;5&nbsp;=&nbsp;43</li>
+        <li>3.&nbsp;5(x&nbsp;&minus;&nbsp;3)&nbsp;=&nbsp;0</li>
+        <li>4.&nbsp;7&nbsp;&minus;&nbsp;3x&nbsp;=&nbsp;4</li>
+        <li>5.&nbsp;x&nbsp;/&nbsp;4&nbsp;+&nbsp;2&nbsp;=&nbsp;6</li>
+        <li>6.&nbsp;3x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;8</li>
+      </ul>
+      <p>Type the final six‑letter password:</p>
+      <input id="password4" type="text" placeholder="Password">
+      <button onclick="checkPassword(3)">Escape</button>
+      <div class="decoder">
+        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Section -->
+  <div id="section_success" class="section">
+    <div class="content">
+      <h1>🏁 You Escaped!</h1>
+      <img src="scene5.png" alt="Bright classroom">
+      <p>Sunlight floods the room. The nightmare fades. The clock finally ticks forward. You hear the intercom murmur, "Class dismissed."</p>
+      <p>You solved every equation and escaped the Haunted Equation Escape. Or did you? As you turn to leave, you catch a glimpse of a shadowy grin in the reflection.</p>
+      <button class="restart" onclick="restart()">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Fail Section -->
+  <div id="section_fail" class="section">
+    <div class="content">
+      <h1>💀 Caught by the Monster</h1>
+      <img src="scene_fail.png" alt="The Monster">
+      <p>The lights burst overhead. A tall, thin creature covered in cracked porcelain skin steps through the doorway. Its featureless mask splits into a jagged smile as it reaches out for you.</p>
+      <p>You hear a voice: "Wrong answer. The lesson isn’t over." And then everything goes black.</p>
+      <button class="restart" onclick="restart()">Try Again</button>
+    </div>
+  </div>
+
+</body>
+</html>
