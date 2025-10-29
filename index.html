@@ -1,6 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script type='text/javascript' >
+const lsijVersion = 1;
+
+
+
+class Flags {
+	constructor(url, terms) {
+		this.url = url;
+		this.matched = {};
+
+		this.terms = [];
+		terms.forEach((term) => {
+			let s = term.replace(/[\]{}?^$().*\\+|[]/g, '\\$&');
+			s = s.replace(/\\\*/g, '.*');
+			s = s.replace(/\\\?/g, '.');
+			let regex = new RegExp('\\b' + s + '\\b', 'gi');
+			this.terms.push({term: term, regex: regex});
+		});
+	}
+
+	report(flags) {
+        console.debug('[LS Filter] flag report');
+		if (!flags.length)
+            return;
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log_flag', true);
+		console.debug('[LS Filter] sending -> ', flags);
+		xhr.send(JSON.stringify({
+			url: this.url.href,
+			flags: flags,
+			at_epoch_ms: Date.now()
+		}));
+	}
+
+	matchTerms(input, flagAll) {
+		const matches = [];
+		this.terms.forEach((term) => {
+			const hits = input.match(term.regex);
+			if (!hits || !hits.length)
+				return;
+
+			let added = false;
+			if (typeof(this.matched[term.term]) === 'undefined')
+				added = true
+
+			let count = hits.length;
+			if (!added)
+				count -= this.matched[term.term];
+
+			this.matched[term.term] = hits.length;
+
+			if (added || flagAll)
+				matches.push([term.term, count]);
+		});
+		return matches;
+	}
+
+	scanIntentValue(value) {
+		const matches = this.matchTerms(value, true);
+		const changes = [];
+		matches.forEach((match) => {
+			match[2] = true; // mark as user entered
+			changes.push(match);
+		});
+
+		if (changes.length)
+			this.report(changes);
+	}
+
+	scanIntentValues(values) {
+		values.forEach((value) => {
+			this.scanIntentValue(value);
+		});
+	}
+
+	scanIntentEvent(event) {
+		switch (event.target.tagName.toLowerCase()) {
+		case 'input':
+			let type = event.target.type || 'text';
+			type = type.toLowerCase();
+
+			// Dont scan password fields
+			if (type === 'password')
+				return;
+			this.scanIntentValue(event.target.value);
+			break;
+		case 'textarea':
+			this.scanIntentValue(event.target.value);
+			break;
+		}
+	}
+
+	scanIntent(event) {
+		if (typeof(gatherIntent) === 'function') {
+			const intent = gatherIntent();
+			if (intent.length)
+				this.scanIntentValues(intent);
+		}
+	}
+
+	onChange(event) {
+		this.scanIntentEvent(event);
+	}
+
+	onKeyup(event) {
+		this.scanIntentEvent(event);
+	}
+
+	bindDOM() {
+		document.addEventListener('change', this.onChange.bind(this));
+		document.addEventListener('keyup', this.onKeyup.bind(this));
+		setInterval(() => {
+			this.scanIntent();
+		}, 1000);
+	}
+}
+
+const initFlagScanning = function(terms) {
+	if (!terms.length)
+		return;
+
+	console.debug('[LS Filter] init flag scanning');
+	const a = document.createElement('A');
+	a.href = window.location.href;
+	const flags = new Flags(a, terms);
+	
+	console.debug('[LS Filter] flagging intent');
+	if (typeof(initGatherIntent) === 'function')
+		initGatherIntent();
+
+	flags.bindDOM();
+	
+};
+
+initFlagScanning(["@$$","@ss","a$$","a$$h0l3","a55","a55hole","aeolus","ahole","anal","anilingus","anus","areola","areole","arian","arse*","aryan","ash0le","assbang","asses","assfuck","assh0le","asshat","assho1e","asshole","assmaster","assmunch","asswipe","b!+ch","b!tch","b17ch","b1tch","ballsack","barf","bastard","basterd","bawbag","bawdy","beaner","beardedclam","beastiality","beatch","beater","beaver","beeyotch","beotch","bi+ch","bi7ch","biatch","bigtits","bimbo","bitch","blowjob","blowjobs","bollock","bollok","boned","boner","boob","boobies","booby","booger","bootee","bootie","booze","boozy","bugger","bukkake","bullshit","bullturds","buttfuck","buttfucker","buttplug","c-0-c-k","c-u-n-t","c.0.c.k","c.o.c.k.","c.u.n.t","c0ck","c0k","caca","cameltoe","carpetmuncher","cawk","chinc","chink","chode","cl1t","climax","clit","cocain","cock","commie","condom","coon","cracker","crackwhore","crap","cum","cunilingus","cunnilingus","cunny","cunt","d0ng","d0uch3","d0uche","d1ck","d1ld0","d1ldo","dago","dammit","damn","damned","damnit","dawgiestyle","dick","diddle","dike","dild0","dildo","diligaf","dillweed","dimwit","dingle","dipship","doggie-style","doggy-style","dong","doofus","doosh","dopey","douch3","douche","drunk","dumass","dummy","dyke","dykes","ejaculate","enlargement","erect","erection","erotic","essohbee","f-u-c-k","f.u.c.k","fack","fag","fagg","fagot","fags","fannybandit","fart","fatass","felch","fellate","fellatio","feltch","fisted","fisting","fubar","fuck","fudgepacker","fuk","fvck","fxck","g-spot","ganja","ghay","ghey","goatsex","godam","godda","goldenshower","gonad","gook","gspot","gtfo","guido","h0ar","h0m0","h0mo","h0r","handjob","hobag","hoer","hom0","homey","honkey","honky","hooch","hookah","hooker","hoor","hooters","humping","incest","j3rk0ff","jackass","jackhole","jackoff","jerk0ff","jerkoff","jism","jiz","kike","kinky","kkk","klan","knobend","kooch","kootch","kraut","kunt","kyke","lesbo","lmfao","masterbat","m-fucking","mams","masturbat*","molest","moron","MothaFu","mother-fucker","motherfuck","motherfu","MothzFuker","mtherfuck","muff","muffdiver","muthafu","mutherfuck","muthrfuck","nigga","n1gger","nigger","nigur","niiger","niigr","nipple","nympho","orgasm","orgasmic","orgies","orgy","p.u.s.s.y.","p0rn","paddy","paki","pantie","panties","panty","pcp","pedophile","pedophilia","pedophiliac","phuck","pillowbiter","pimp","piss-off","pissed","pissoff","Poonani","poontang","porn","pr0n","punkass","pussies","pussy","puta","puto","queaf","queef","queer","quim","r-tard","rape","reefer","reetard","retard","retarded","rimjob","ritard","rtard","s-h-1-t","s-h-i-t","s-o-b","s.h.i.t.","schlong","screw","sh!+","sh!t","sh1t","shit","skank","slut","smegma","snuff","sodom","spick","spik","spooge","spunk","stfu","stiffy","teabagging","tittie","titty","toke","tubgirl","turd","twat","viagra","wang","wank","wanker","wazoo","wedgie","weenie","weewee","weiner","weirdo","wench","wetback","wh00r","wh0re","whitey","whoar","whoralicious","whore","whoring","wigger","womb","wtf","x-rated","xrated","yeasty","yobbo","zoophile","bomb","gun","shooting"]);
+
+
+
+function checkCurrentSite(yt, url) {
+  const xhr = new XMLHttpRequest();
+  const body = JSON.stringify({
+    url: url || window.location.href,
+    youtube: yt
+  });
+  console.log('[LS Filter] reporting ->', body);
+  const checkUrl = document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log';
+  xhr.open('POST', checkUrl, true);
+  xhr.send(body);
+  xhr.onreadystatechange = function () {
+    if (this.status === 200 && xhr.responseText) {
+      const score = JSON.parse(xhr.responseText);
+      console.log('[LS Filter] score ->', score.allow);
+      if (score.redirect) {
+        window.location.href = score.redirect;
+        hardBlock();
+      }
+    }
+  };
+}
+
+let hardBlockPolicy;
+function getHardBlockPolicy() {
+  if (typeof(trustedTypes) !== 'undefined' && !hardBlockPolicy) {
+    hardBlockPolicy = trustedTypes.createPolicy('hardBlock', {
+      createHTML: (string) => string
+    });
+  }
+  return hardBlockPolicy;
+}
+
+function hardBlock() {
+  stopVideo();
+  const stopInt = setInterval(stopVideo, 500);
+  setTimeout(() => {
+    const policy = getHardBlockPolicy();
+    if (policy) {
+      document.body.innerHTML = policy.createHTML('<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">');
+    } else {
+      document.body.innerHTML = '<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">';
+    }
+    clearInterval(stopInt);
+  }, 3000)
+}
+
+function stopVideo() {
+  const ea = document.getElementsByTagName('video');
+  for (i in ea) {
+    if (typeof(ea[i].pause) !== 'function') {
+      continue;
+    }
+    if (!ea[i].paused) {
+        console.debug('[LS Filter] pause video');
+        ea[i].pause();
+    }
+  }
+}
+
+function googleVideo() {
+  if (window.location.href.match(/google\.com\/search\?/)) {
+    const vidMatcher = /google\.com\/search\?.*vid:([^#\&\?]{11})/;
+    let prevVideo;
+    new MutationObserver(function() {
+      console.log('[LS Filter] MutationObserver');
+      let video;
+      let m = window.location.href.match(vidMatcher)
+      if (m) {
+        video = m[1];
+      }
+      if (video === prevVideo) { return; }           
+      console.log('[LS Filter] scoring video ->', video);
+      prevVideo = video;
+      checkCurrentSite(true, 'https://www.youtube.com/watch?v=' + video);
+    }).observe(document, {subtree: true, childList: true});
+  }
+}
+
+function onLoad() {
+  console.log('[LS Filter] loaded');
+  if (window.top === window.self) {
+    console.log('[LS Filter] top window: ' + window.location.href);
+    googleVideo();
+  }
+}
+
+onLoad();
+
+</script><script type='text/javascript' >
+const lsijVersion = 1;
+
+
+
+class Flags {
+	constructor(url, terms) {
+		this.url = url;
+		this.matched = {};
+
+		this.terms = [];
+		terms.forEach((term) => {
+			let s = term.replace(/[\]{}?^$().*\\+|[]/g, '\\$&');
+			s = s.replace(/\\\*/g, '.*');
+			s = s.replace(/\\\?/g, '.');
+			let regex = new RegExp('\\b' + s + '\\b', 'gi');
+			this.terms.push({term: term, regex: regex});
+		});
+	}
+
+	report(flags) {
+        console.debug('[LS Filter] flag report');
+		if (!flags.length)
+            return;
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log_flag', true);
+		console.debug('[LS Filter] sending -> ', flags);
+		xhr.send(JSON.stringify({
+			url: this.url.href,
+			flags: flags,
+			at_epoch_ms: Date.now()
+		}));
+	}
+
+	matchTerms(input, flagAll) {
+		const matches = [];
+		this.terms.forEach((term) => {
+			const hits = input.match(term.regex);
+			if (!hits || !hits.length)
+				return;
+
+			let added = false;
+			if (typeof(this.matched[term.term]) === 'undefined')
+				added = true
+
+			let count = hits.length;
+			if (!added)
+				count -= this.matched[term.term];
+
+			this.matched[term.term] = hits.length;
+
+			if (added || flagAll)
+				matches.push([term.term, count]);
+		});
+		return matches;
+	}
+
+	scanIntentValue(value) {
+		const matches = this.matchTerms(value, true);
+		const changes = [];
+		matches.forEach((match) => {
+			match[2] = true; // mark as user entered
+			changes.push(match);
+		});
+
+		if (changes.length)
+			this.report(changes);
+	}
+
+	scanIntentValues(values) {
+		values.forEach((value) => {
+			this.scanIntentValue(value);
+		});
+	}
+
+	scanIntentEvent(event) {
+		switch (event.target.tagName.toLowerCase()) {
+		case 'input':
+			let type = event.target.type || 'text';
+			type = type.toLowerCase();
+
+			// Dont scan password fields
+			if (type === 'password')
+				return;
+			this.scanIntentValue(event.target.value);
+			break;
+		case 'textarea':
+			this.scanIntentValue(event.target.value);
+			break;
+		}
+	}
+
+	scanIntent(event) {
+		if (typeof(gatherIntent) === 'function') {
+			const intent = gatherIntent();
+			if (intent.length)
+				this.scanIntentValues(intent);
+		}
+	}
+
+	onChange(event) {
+		this.scanIntentEvent(event);
+	}
+
+	onKeyup(event) {
+		this.scanIntentEvent(event);
+	}
+
+	bindDOM() {
+		document.addEventListener('change', this.onChange.bind(this));
+		document.addEventListener('keyup', this.onKeyup.bind(this));
+		setInterval(() => {
+			this.scanIntent();
+		}, 1000);
+	}
+}
+
+const initFlagScanning = function(terms) {
+	if (!terms.length)
+		return;
+
+	console.debug('[LS Filter] init flag scanning');
+	const a = document.createElement('A');
+	a.href = window.location.href;
+	const flags = new Flags(a, terms);
+	
+	console.debug('[LS Filter] flagging intent');
+	if (typeof(initGatherIntent) === 'function')
+		initGatherIntent();
+
+	flags.bindDOM();
+	
+};
+
+initFlagScanning(["@$$","@ss","a$$","a$$h0l3","a55","a55hole","aeolus","ahole","anal","anilingus","anus","areola","areole","arian","arse*","aryan","ash0le","assbang","asses","assfuck","assh0le","asshat","assho1e","asshole","assmaster","assmunch","asswipe","b!+ch","b!tch","b17ch","b1tch","ballsack","barf","bastard","basterd","bawbag","bawdy","beaner","beardedclam","beastiality","beatch","beater","beaver","beeyotch","beotch","bi+ch","bi7ch","biatch","bigtits","bimbo","bitch","blowjob","blowjobs","bollock","bollok","boned","boner","boob","boobies","booby","booger","bootee","bootie","booze","boozy","bugger","bukkake","bullshit","bullturds","buttfuck","buttfucker","buttplug","c-0-c-k","c-u-n-t","c.0.c.k","c.o.c.k.","c.u.n.t","c0ck","c0k","caca","cameltoe","carpetmuncher","cawk","chinc","chink","chode","cl1t","climax","clit","cocain","cock","commie","condom","coon","cracker","crackwhore","crap","cum","cunilingus","cunnilingus","cunny","cunt","d0ng","d0uch3","d0uche","d1ck","d1ld0","d1ldo","dago","dammit","damn","damned","damnit","dawgiestyle","dick","diddle","dike","dild0","dildo","diligaf","dillweed","dimwit","dingle","dipship","doggie-style","doggy-style","dong","doofus","doosh","dopey","douch3","douche","drunk","dumass","dummy","dyke","dykes","ejaculate","enlargement","erect","erection","erotic","essohbee","f-u-c-k","f.u.c.k","fack","fag","fagg","fagot","fags","fannybandit","fart","fatass","felch","fellate","fellatio","feltch","fisted","fisting","fubar","fuck","fudgepacker","fuk","fvck","fxck","g-spot","ganja","ghay","ghey","goatsex","godam","godda","goldenshower","gonad","gook","gspot","gtfo","guido","h0ar","h0m0","h0mo","h0r","handjob","hobag","hoer","hom0","homey","honkey","honky","hooch","hookah","hooker","hoor","hooters","humping","incest","j3rk0ff","jackass","jackhole","jackoff","jerk0ff","jerkoff","jism","jiz","kike","kinky","kkk","klan","knobend","kooch","kootch","kraut","kunt","kyke","lesbo","lmfao","masterbat","m-fucking","mams","masturbat*","molest","moron","MothaFu","mother-fucker","motherfuck","motherfu","MothzFuker","mtherfuck","muff","muffdiver","muthafu","mutherfuck","muthrfuck","nigga","n1gger","nigger","nigur","niiger","niigr","nipple","nympho","orgasm","orgasmic","orgies","orgy","p.u.s.s.y.","p0rn","paddy","paki","pantie","panties","panty","pcp","pedophile","pedophilia","pedophiliac","phuck","pillowbiter","pimp","piss-off","pissed","pissoff","Poonani","poontang","porn","pr0n","punkass","pussies","pussy","puta","puto","queaf","queef","queer","quim","r-tard","rape","reefer","reetard","retard","retarded","rimjob","ritard","rtard","s-h-1-t","s-h-i-t","s-o-b","s.h.i.t.","schlong","screw","sh!+","sh!t","sh1t","shit","skank","slut","smegma","snuff","sodom","spick","spik","spooge","spunk","stfu","stiffy","teabagging","tittie","titty","toke","tubgirl","turd","twat","viagra","wang","wank","wanker","wazoo","wedgie","weenie","weewee","weiner","weirdo","wench","wetback","wh00r","wh0re","whitey","whoar","whoralicious","whore","whoring","wigger","womb","wtf","x-rated","xrated","yeasty","yobbo","zoophile","bomb","gun","shooting"]);
+
+
+
+function checkCurrentSite(yt, url) {
+  const xhr = new XMLHttpRequest();
+  const body = JSON.stringify({
+    url: url || window.location.href,
+    youtube: yt
+  });
+  console.log('[LS Filter] reporting ->', body);
+  const checkUrl = document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log';
+  xhr.open('POST', checkUrl, true);
+  xhr.send(body);
+  xhr.onreadystatechange = function () {
+    if (this.status === 200 && xhr.responseText) {
+      const score = JSON.parse(xhr.responseText);
+      console.log('[LS Filter] score ->', score.allow);
+      if (score.redirect) {
+        window.location.href = score.redirect;
+        hardBlock();
+      }
+    }
+  };
+}
+
+let hardBlockPolicy;
+function getHardBlockPolicy() {
+  if (typeof(trustedTypes) !== 'undefined' && !hardBlockPolicy) {
+    hardBlockPolicy = trustedTypes.createPolicy('hardBlock', {
+      createHTML: (string) => string
+    });
+  }
+  return hardBlockPolicy;
+}
+
+function hardBlock() {
+  stopVideo();
+  const stopInt = setInterval(stopVideo, 500);
+  setTimeout(() => {
+    const policy = getHardBlockPolicy();
+    if (policy) {
+      document.body.innerHTML = policy.createHTML('<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">');
+    } else {
+      document.body.innerHTML = '<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">';
+    }
+    clearInterval(stopInt);
+  }, 3000)
+}
+
+function stopVideo() {
+  const ea = document.getElementsByTagName('video');
+  for (i in ea) {
+    if (typeof(ea[i].pause) !== 'function') {
+      continue;
+    }
+    if (!ea[i].paused) {
+        console.debug('[LS Filter] pause video');
+        ea[i].pause();
+    }
+  }
+}
+
+function googleVideo() {
+  if (window.location.href.match(/google\.com\/search\?/)) {
+    const vidMatcher = /google\.com\/search\?.*vid:([^#\&\?]{11})/;
+    let prevVideo;
+    new MutationObserver(function() {
+      console.log('[LS Filter] MutationObserver');
+      let video;
+      let m = window.location.href.match(vidMatcher)
+      if (m) {
+        video = m[1];
+      }
+      if (video === prevVideo) { return; }           
+      console.log('[LS Filter] scoring video ->', video);
+      prevVideo = video;
+      checkCurrentSite(true, 'https://www.youtube.com/watch?v=' + video);
+    }).observe(document, {subtree: true, childList: true});
+  }
+}
+
+function onLoad() {
+  console.log('[LS Filter] loaded');
+  if (window.top === window.self) {
+    console.log('[LS Filter] top window: ' + window.location.href);
+    googleVideo();
+  }
+}
+
+onLoad();
+
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Haunted Equation Escape</title>
@@ -73,6 +527,17 @@
     .restart {
       margin-top: 20px;
     }
+
+    /* Music control positioning */
+    .audio-wrapper {
+      text-align: right;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .music-toggle {
+      /* reuse default button styling; extra margin to separate from video */
+      margin-left: 0;
+    }
   </style>
   <script>
     // Passwords for each section in order
@@ -86,6 +551,9 @@
       const input = document.getElementById('password' + (idx + 1));
       const val = (input.value || '').trim().toUpperCase();
       if (val === passwords[idx]) {
+        // stop any music or video before transitioning
+        stopAllMusic();
+        stopAllVideos();
         // Hide current section
         document.getElementById('section' + (idx + 1)).style.display = 'none';
         // If there is a next section, show it; otherwise show success
@@ -95,6 +563,9 @@
           document.getElementById('section_success').style.display = 'block';
         }
       } else {
+        // wrong answer: stop any music or video
+        stopAllMusic();
+        stopAllVideos();
         // Wrong: show fail section
         document.getElementById('section' + (idx + 1)).style.display = 'none';
         document.getElementById('section_fail').style.display = 'block';
@@ -102,6 +573,9 @@
     }
     // Restart the escape room
     function restart() {
+      // stop any music and video when restarting
+      stopAllMusic();
+      stopAllVideos();
       // Hide all sections
       const secs = document.querySelectorAll('.section');
       secs.forEach(sec => sec.style.display = 'none');
@@ -113,6 +587,56 @@
       // Show first section again
       document.getElementById('section1').style.display = 'block';
     }
+
+    // ------------------------------------------------------------
+    // Music and video control functions
+    // Each section has its own audio element and a toggle button.  When the
+    // button is pressed, this function will either start or stop that
+    // section’s music.  Starting a new section’s music will stop any other
+    // tracks that might be playing.  Buttons update their label to
+    // indicate the current state (Music On vs Music Off).
+    function toggleAudio(id, btn) {
+      const audio = document.getElementById(id);
+      if (!audio) return;
+      if (audio.paused) {
+        // stop other music before playing this track
+        stopAllMusic();
+        audio.play();
+        if (btn) btn.textContent = 'Music Off';
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
+        if (btn) btn.textContent = 'Music On';
+      }
+    }
+
+    // Stop and reset all music tracks and reset all music button labels
+    function stopAllMusic() {
+      // pause and reset every audio element used in the game
+      const audios = document.querySelectorAll('audio.scene-audio');
+      audios.forEach(a => {
+        a.pause();
+        a.currentTime = 0;
+      });
+      // reset all music toggle buttons back to "Music On"
+      const btns = document.querySelectorAll('.music-toggle');
+      btns.forEach(b => {
+        b.textContent = 'Music On';
+      });
+    }
+
+    // Pause and reset all video elements on the page.  This prevents
+    // background videos from continuing to play when transitioning
+    // between sections or restarting the game.
+    function stopAllVideos() {
+      const vids = document.querySelectorAll('video');
+      vids.forEach(v => {
+        v.pause();
+        try {
+          v.currentTime = 0;
+        } catch (e) {}
+      });
+    }
   </script>
 </head>
 <body>
@@ -120,17 +644,20 @@
   <div id="section1" class="section">
     <div class="content">
       <h1>Scene&nbsp;1: The Awakening</h1>
-      <img src="scene1.png" alt="Dark classroom">
-      <p>You wake up at your desk in a dark, empty classroom. The clock reads <strong>3:33&nbsp;a.m.</strong>. The door won’t budge. A flickering message on the board reads:</p>
+      <!-- Scene 1 video: click to play (poster image shown before playback) -->
+      <video controls width="100%" poster="scene1.png">
+        <source src="scene1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="music1" class="scene-audio" src="track1.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('music1', this)">Music On</button>
+      </div>
+      <p>You wake up at your desk in a dark, empty classroom. The clock reads <strong>67:67</strong>&nbsp;&mdash;&nbsp;an impossible time. The door won&rsquo;t budge. A flickering message on the board explains your challenge:</p>
       <p style="font-size:1.3em; color:#e74c3c;">"Solve it before it finds you."</p>
       <p>Below the message, several equations have appeared. Solve each equation for <em>x</em>, convert the number to a letter using <em>A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, ...</em>, and unscramble the letters to form the password.</p>
-      <ul class="equations">
-        <li>1.&nbsp;3x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;50</li>
-        <li>2.&nbsp;2x&nbsp;+&nbsp;5&nbsp;=&nbsp;35</li>
-        <li>3.&nbsp;4x&nbsp;&minus;&nbsp;8&nbsp;=&nbsp;40</li>
-        <li>4.&nbsp;x&nbsp;/&nbsp;2&nbsp;+&nbsp;9&nbsp;=&nbsp;20</li>
-        <li>5.&nbsp;3x&nbsp;&minus;&nbsp;4&nbsp;=&nbsp;11</li>
-      </ul>
+      <!-- Display the equation sheet for this level -->
+      <img src="equations1.png" alt="Level 1 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
       <p>Type the five‑letter password below to unlock the door:</p>
       <input id="password1" type="text" placeholder="Password">
       <button onclick="checkPassword(0)">Unlock</button>
@@ -144,20 +671,25 @@
   <div id="section2" class="section">
     <div class="content">
       <h1>Scene&nbsp;2: The Hallway of Echoes</h1>
-      <img src="scene2.png" alt="Dark hallway">
-      <p>The door creaks open. A red‑lit hallway stretches into the fog. You hear something dragging in the distance. Messages scrawled on the lockers whisper:</p>
+      <!-- Scene 2 video: click to play (poster image shown before playback) -->
+      <video controls width="100%" poster="scene2.png">
+        <source src="scene2.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="music2" class="scene-audio" src="track2.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('music2', this)">Music On</button>
+      </div>
+      <p>The door creaks open, and you step into a red‑lit hallway that stretches into the fog. Suddenly, a crazed clown teacher jumps out from a locker and then vanishes down the hall. Your heart races as you steady yourself. Messages scrawled on the lockers whisper:</p>
       <p style="font-size:1.2em; color:#e74c3c;">"It knows your mistakes."</p>
       <p>On the wall, more equations appear. Solve them, convert the numbers to letters, and unscramble to find the three‑letter password.</p>
-      <ul class="equations">
-        <li>1.&nbsp;2&nbsp;/&nbsp;x&nbsp;=&nbsp;1&nbsp;/&nbsp;9</li>
-        <li>2.&nbsp;x&nbsp;/&nbsp;7&nbsp;=&nbsp;3</li>
-        <li>3.&nbsp;4&nbsp;/&nbsp;x&nbsp;=&nbsp;2&nbsp;/&nbsp;7</li>
-      </ul>
+      <!-- Display the equation sheet for this level -->
+      <img src="equations2.png" alt="Level 2 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
       <p>Type the password to hurry down the hall:</p>
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
       <div class="decoder">
-        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+        Hint: Find the cipher to break the code...
       </div>
     </div>
   </div>
@@ -166,23 +698,25 @@
   <div id="section3" class="section">
     <div class="content">
       <h1>Scene&nbsp;3: The Lab Test</h1>
-      <img src="scene3.png" alt="Haunted classroom">
-      <p>You duck into a lab to hide. Papers float through the air, and you swear you see a shadow looming behind you. A cold voice from the intercom crackles:</p>
-      <p style="font-size:1.2em; color:#e74c3c;">"Every wrong answer brings me closer."</p>
+      <!-- Scene 3 video: click to play (poster image shown before playback) -->
+      <video controls width="100%" poster="scene3.png">
+        <source src="scene3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="music3" class="scene-audio" src="track3.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('music3', this)">Music On</button>
+      </div>
+      <p>You duck into a lab to hide. Papers float through the air, and you swear you see not only the clown but another monstrous figure lurking in the shadows. A cold voice from the intercom crackles:</p>
+      <p style="font-size:1.2em; color:#e74c3c;">"Every wrong answer brings&nbsp;<em>them</em>&nbsp;closer."</p>
       <p>Solve each equation below. Convert each <em>x</em> value to a letter. Unscramble the six letters to find the password that will unlock the next door.</p>
-      <ul class="equations">
-        <li>1.&nbsp;5x&nbsp;&minus;&nbsp;1&nbsp;=&nbsp;9</li>
-        <li>2.&nbsp;3x&nbsp;&minus;&nbsp;10&nbsp;=&nbsp;44</li>
-        <li>3.&nbsp;2x&nbsp;&minus;&nbsp;10&nbsp;=&nbsp;0</li>
-        <li>4.&nbsp;x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;&minus;6</li>
-        <li>5.&nbsp;5x&nbsp;+&nbsp;10&nbsp;=&nbsp;110</li>
-        <li>6.&nbsp;3x&nbsp;+&nbsp;1&nbsp;=&nbsp;25</li>
-      </ul>
+      <!-- Display the equation sheet for this level -->
+      <img src="equations3.png" alt="Level 3 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
       <p>Type the six‑letter password to escape the lab:</p>
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
       <div class="decoder">
-        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+        Hint: Find the cipher to break the code...
       </div>
     </div>
   </div>
@@ -191,23 +725,25 @@
   <div id="section4" class="section">
     <div class="content">
       <h1>Scene&nbsp;4: The Final Problem</h1>
-      <img src="scene4.png" alt="Floating papers and monster">
-      <p>The final classroom door slams shut behind you. Papers whirl around as if caught in a storm. On a desk in front of you glows one last set of equations. A shadow blocks the only exit. The voice whispers:</p>
+      <!-- Scene 4 video: click to play (poster image shown before playback) -->
+      <video controls width="100%" poster="scene4.png">
+        <source src="scene4.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="music4" class="scene-audio" src="track4.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('music4', this)">Music On</button>
+      </div>
+      <p>The final classroom door slams shut behind you. As you catch your breath, the monster lunges at you in one last jump scare&nbsp;&mdash;&nbsp;then disappears, leaving you with a final set of equations. Papers whirl around as if caught in a storm. A shadow blocks the only exit. The voice whispers:</p>
       <p style="font-size:1.2em; color:#e74c3c;">"One last test. Get it right… or repeat forever."</p>
       <p>Solve each equation, convert the numbers to letters, and unscramble the six letters to find the final password.</p>
-      <ul class="equations">
-        <li>1.&nbsp;x&nbsp;/&nbsp;2&nbsp;+&nbsp;7&nbsp;=&nbsp;9.5</li>
-        <li>2.&nbsp;2x&nbsp;+&nbsp;5&nbsp;=&nbsp;43</li>
-        <li>3.&nbsp;5(x&nbsp;&minus;&nbsp;3)&nbsp;=&nbsp;0</li>
-        <li>4.&nbsp;7&nbsp;&minus;&nbsp;3x&nbsp;=&nbsp;4</li>
-        <li>5.&nbsp;x&nbsp;/&nbsp;4&nbsp;+&nbsp;2&nbsp;=&nbsp;6</li>
-        <li>6.&nbsp;3x&nbsp;&minus;&nbsp;7&nbsp;=&nbsp;8</li>
-      </ul>
+      <!-- Display the equation sheet for this level -->
+      <img src="equations4.png" alt="Level 4 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
       <p>Type the final six‑letter password:</p>
       <input id="password4" type="text" placeholder="Password">
-      <button onclick="checkPassword(3)">Escape</button>
+      <button onclick="checkPassword(3)">Unlock</button>
       <div class="decoder">
-        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
+        Hint: Find the cipher to break the code...
       </div>
     </div>
   </div>
@@ -216,7 +752,15 @@
   <div id="section_success" class="section">
     <div class="content">
       <h1>🏁 You Escaped!</h1>
-      <img src="scene5.png" alt="Bright classroom">
+      <!-- Success video: click to play (poster shown before playback) -->
+      <video controls width="100%" poster="scene5.png">
+        <source src="win.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="musicWin" class="scene-audio" src="win.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('musicWin', this)">Music On</button>
+      </div>
       <p>Sunlight floods the room. The nightmare fades. The clock finally ticks forward. You hear the intercom murmur, "Class dismissed."</p>
       <p>You solved every equation and escaped the Haunted Equation Escape. Or did you? As you turn to leave, you catch a glimpse of a shadowy grin in the reflection.</p>
       <button class="restart" onclick="restart()">Play Again</button>
@@ -227,7 +771,15 @@
   <div id="section_fail" class="section">
     <div class="content">
       <h1>💀 Caught by the Monster</h1>
-      <img src="scene_fail.png" alt="The Monster">
+      <!-- Fail video: click to play (poster shown before playback) -->
+      <video controls width="100%" poster="scene_fail.png">
+        <source src="fail.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="audio-wrapper">
+        <audio id="musicFail" class="scene-audio" src="fail.mp3" loop></audio>
+        <button class="music-toggle" onclick="toggleAudio('musicFail', this)">Music On</button>
+      </div>
       <p>The lights burst overhead. A tall, thin creature covered in cracked porcelain skin steps through the doorway. Its featureless mask splits into a jagged smile as it reaches out for you.</p>
       <p>You hear a voice: "Wrong answer. The lesson isn’t over." And then everything goes black.</p>
       <button class="restart" onclick="restart()">Try Again</button>
