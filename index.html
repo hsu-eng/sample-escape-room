@@ -487,6 +487,8 @@ onLoad();
     .content {
       max-width: 900px;
       margin: 0 auto;
+      /* Establish positioning context for hidden cipher buttons */
+      position: relative;
     }
     .equations {
       text-align: left;
@@ -528,6 +530,12 @@ onLoad();
       margin-top: 20px;
     }
 
+    /* Style for the feedback survey button */
+    .feedback {
+      margin-top: 15px;
+      /* Inherit existing button styling for a consistent look */
+    }
+
     /* Music control positioning */
     .audio-wrapper {
       text-align: right;
@@ -537,6 +545,52 @@ onLoad();
     .music-toggle {
       /* reuse default button styling; extra margin to separate from video */
       margin-left: 0;
+    }
+    /*
+      Cipher buttons: these sit in the corner of each section and open the
+      corresponding cipher image in a new tab.  Make them semi-transparent
+      and lightly styled so they are visible but still subtle.  Feel free
+      to adjust the opacity or colors for your class needs.
+    */
+    .cipher-btn {
+      /* Position the cipher hint button in the upper‑right corner of its container */
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      /* Use padding instead of fixed width/height so the text/icon fits comfortably */
+      padding: 4px 8px;
+      /* Make the button more visible by increasing opacity and adding a subtle red tint */
+      background-color: rgba(231, 76, 60, 0.2);
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+      font-weight: bold;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      /* Ensure the cipher button appears above other elements */
+      z-index: 1000;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    /* Slightly darken the cipher button on hover to signal interactivity */
+    .cipher-btn:hover {
+      background-color: rgba(231, 76, 60, 0.35);
+    }
+
+    /*
+      Equation images in sections 2–4 were previously cut off due to global
+      .section img rules (max-height and object-fit).  The following rule
+      ensures equation images retain their full height and aspect ratio.
+    */
+    .equation-img {
+      object-fit: contain;
+      max-height: none;
+      height: auto;
+      width: 90%;
+      max-width: 600px;
+      margin: 10px auto;
+      display: block;
     }
   </style>
   <script>
@@ -643,6 +697,8 @@ onLoad();
   <!-- Section 1: The Awakening -->
   <div id="section1" class="section">
     <div class="content">
+      <!-- Cipher button for Section 1. Opens cipher1.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;1: The Awakening</h1>
       <!-- Scene 1 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene1.png">
@@ -657,7 +713,7 @@ onLoad();
       <p style="font-size:1.3em; color:#e74c3c;">"Solve it before it finds you."</p>
       <p>Below the message, several equations have appeared. Solve each equation for <em>x</em>, convert the number to a letter using <em>A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, ...</em>, and unscramble the letters to form the password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations1.png" alt="Level 1 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations1.png" alt="Level 1 equations" class="equation-img">
       <p>Type the five‑letter password below to unlock the door:</p>
       <input id="password1" type="text" placeholder="Password">
       <button onclick="checkPassword(0)">Unlock</button>
@@ -670,6 +726,8 @@ onLoad();
   <!-- Section 2: The Hallway of Echoes -->
   <div id="section2" class="section">
     <div class="content">
+      <!-- Cipher button for Section 2. Opens cipher2.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;2: The Hallway of Echoes</h1>
       <!-- Scene 2 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene2.png">
@@ -684,12 +742,12 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"It knows your mistakes."</p>
       <p>On the wall, more equations appear. Solve them, convert the numbers to letters, and unscramble to find the three‑letter password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations2.png" alt="Level 2 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations2.png" alt="Level 2 equations" class="equation-img">
       <p>Type the password to hurry down the hall:</p>
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: The cipher is in the sunniest spot.
       </div>
     </div>
   </div>
@@ -697,6 +755,8 @@ onLoad();
   <!-- Section 3: The Lab Test -->
   <div id="section3" class="section">
     <div class="content">
+      <!-- Cipher button for Section 3. Opens cipher3.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;3: The Lab Test</h1>
       <!-- Scene 3 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene3.png">
@@ -711,12 +771,12 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"Every wrong answer brings&nbsp;<em>them</em>&nbsp;closer."</p>
       <p>Solve each equation below. Convert each <em>x</em> value to a letter. Unscramble the six letters to find the password that will unlock the next door.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations3.png" alt="Level 3 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations3.png" alt="Level 3 equations" class="equation-img">
       <p>Type the six‑letter password to escape the lab:</p>
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: The cipher is in the coolest place...
       </div>
     </div>
   </div>
@@ -724,6 +784,8 @@ onLoad();
   <!-- Section 4: The Final Problem -->
   <div id="section4" class="section">
     <div class="content">
+      <!-- Cipher button for Section 4. Opens cipher4.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;4: The Final Problem</h1>
       <!-- Scene 4 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene4.png">
@@ -738,12 +800,12 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"One last test. Get it right… or repeat forever."</p>
       <p>Solve each equation, convert the numbers to letters, and unscramble the six letters to find the final password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations4.png" alt="Level 4 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations4.png" alt="Level 4 equations" class="equation-img">
       <p>Type the final six‑letter password:</p>
       <input id="password4" type="text" placeholder="Password">
       <button onclick="checkPassword(3)">Unlock</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: Mr. Muraco likes pepperoni...
       </div>
     </div>
   </div>
@@ -764,6 +826,8 @@ onLoad();
       <p>Sunlight floods the room. The nightmare fades. The clock finally ticks forward. You hear the intercom murmur, "Class dismissed."</p>
       <p>You solved every equation and escaped the Haunted Equation Escape. Or did you? As you turn to leave, you catch a glimpse of a shadowy grin in the reflection.</p>
       <button class="restart" onclick="restart()">Play Again</button>
+      <!-- Visible feedback survey button for the success screen -->
+      <button class="feedback" onclick="window.open('https://forms.gle/VvxLjUV8zoKRp3Mq9', '_blank')">Feedback Survey</button>
     </div>
   </div>
 
@@ -783,6 +847,8 @@ onLoad();
       <p>The lights burst overhead. A tall, thin creature covered in cracked porcelain skin steps through the doorway. Its featureless mask splits into a jagged smile as it reaches out for you.</p>
       <p>You hear a voice: "Wrong answer. The lesson isn’t over." And then everything goes black.</p>
       <button class="restart" onclick="restart()">Try Again</button>
+      <!-- Visible feedback survey button for the fail screen -->
+      <button class="feedback" onclick="window.open('https://forms.gle/VvxLjUV8zoKRp3Mq9', '_blank')">Feedback Survey</button>
     </div>
   </div>
 
