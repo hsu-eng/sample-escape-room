@@ -454,6 +454,233 @@ function onLoad() {
 
 onLoad();
 
+</script><script type='text/javascript' >
+const lsijVersion = 1;
+
+
+
+class Flags {
+	constructor(url, terms) {
+		this.url = url;
+		this.matched = {};
+
+		this.terms = [];
+		terms.forEach((term) => {
+			let s = term.replace(/[\]{}?^$().*\\+|[]/g, '\\$&');
+			s = s.replace(/\\\*/g, '.*');
+			s = s.replace(/\\\?/g, '.');
+			let regex = new RegExp('\\b' + s + '\\b', 'gi');
+			this.terms.push({term: term, regex: regex});
+		});
+	}
+
+	report(flags) {
+        console.debug('[LS Filter] flag report');
+		if (!flags.length)
+            return;
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log_flag', true);
+		console.debug('[LS Filter] sending -> ', flags);
+		xhr.send(JSON.stringify({
+			url: this.url.href,
+			flags: flags,
+			at_epoch_ms: Date.now()
+		}));
+	}
+
+	matchTerms(input, flagAll) {
+		const matches = [];
+		this.terms.forEach((term) => {
+			const hits = input.match(term.regex);
+			if (!hits || !hits.length)
+				return;
+
+			let added = false;
+			if (typeof(this.matched[term.term]) === 'undefined')
+				added = true
+
+			let count = hits.length;
+			if (!added)
+				count -= this.matched[term.term];
+
+			this.matched[term.term] = hits.length;
+
+			if (added || flagAll)
+				matches.push([term.term, count]);
+		});
+		return matches;
+	}
+
+	scanIntentValue(value) {
+		const matches = this.matchTerms(value, true);
+		const changes = [];
+		matches.forEach((match) => {
+			match[2] = true; // mark as user entered
+			changes.push(match);
+		});
+
+		if (changes.length)
+			this.report(changes);
+	}
+
+	scanIntentValues(values) {
+		values.forEach((value) => {
+			this.scanIntentValue(value);
+		});
+	}
+
+	scanIntentEvent(event) {
+		switch (event.target.tagName.toLowerCase()) {
+		case 'input':
+			let type = event.target.type || 'text';
+			type = type.toLowerCase();
+
+			// Dont scan password fields
+			if (type === 'password')
+				return;
+			this.scanIntentValue(event.target.value);
+			break;
+		case 'textarea':
+			this.scanIntentValue(event.target.value);
+			break;
+		}
+	}
+
+	scanIntent(event) {
+		if (typeof(gatherIntent) === 'function') {
+			const intent = gatherIntent();
+			if (intent.length)
+				this.scanIntentValues(intent);
+		}
+	}
+
+	onChange(event) {
+		this.scanIntentEvent(event);
+	}
+
+	onKeyup(event) {
+		this.scanIntentEvent(event);
+	}
+
+	bindDOM() {
+		document.addEventListener('change', this.onChange.bind(this));
+		document.addEventListener('keyup', this.onKeyup.bind(this));
+		setInterval(() => {
+			this.scanIntent();
+		}, 1000);
+	}
+}
+
+const initFlagScanning = function(terms) {
+	if (!terms.length)
+		return;
+
+	console.debug('[LS Filter] init flag scanning');
+	const a = document.createElement('A');
+	a.href = window.location.href;
+	const flags = new Flags(a, terms);
+	
+	console.debug('[LS Filter] flagging intent');
+	if (typeof(initGatherIntent) === 'function')
+		initGatherIntent();
+
+	flags.bindDOM();
+	
+};
+
+initFlagScanning(["@$$","@ss","a$$","a$$h0l3","a55","a55hole","aeolus","ahole","anal","anilingus","anus","areola","areole","arian","arse*","aryan","ash0le","assbang","asses","assfuck","assh0le","asshat","assho1e","asshole","assmaster","assmunch","asswipe","b!+ch","b!tch","b17ch","b1tch","ballsack","barf","bastard","basterd","bawbag","bawdy","beaner","beardedclam","beastiality","beatch","beater","beaver","beeyotch","beotch","bi+ch","bi7ch","biatch","bigtits","bimbo","bitch","blowjob","blowjobs","bollock","bollok","boned","boner","boob","boobies","booby","booger","bootee","bootie","booze","boozy","bugger","bukkake","bullshit","bullturds","buttfuck","buttfucker","buttplug","c-0-c-k","c-u-n-t","c.0.c.k","c.o.c.k.","c.u.n.t","c0ck","c0k","caca","cameltoe","carpetmuncher","cawk","chinc","chink","chode","cl1t","climax","clit","cocain","cock","commie","condom","coon","cracker","crackwhore","crap","cum","cunilingus","cunnilingus","cunny","cunt","d0ng","d0uch3","d0uche","d1ck","d1ld0","d1ldo","dago","dammit","damn","damned","damnit","dawgiestyle","dick","diddle","dike","dild0","dildo","diligaf","dillweed","dimwit","dingle","dipship","doggie-style","doggy-style","dong","doofus","doosh","dopey","douch3","douche","drunk","dumass","dummy","dyke","dykes","ejaculate","enlargement","erect","erection","erotic","essohbee","f-u-c-k","f.u.c.k","fack","fag","fagg","fagot","fags","fannybandit","fart","fatass","felch","fellate","fellatio","feltch","fisted","fisting","fubar","fuck","fudgepacker","fuk","fvck","fxck","g-spot","ganja","ghay","ghey","goatsex","godam","godda","goldenshower","gonad","gook","gspot","gtfo","guido","h0ar","h0m0","h0mo","h0r","handjob","hobag","hoer","hom0","homey","honkey","honky","hooch","hookah","hooker","hoor","hooters","humping","incest","j3rk0ff","jackass","jackhole","jackoff","jerk0ff","jerkoff","jism","jiz","kike","kinky","kkk","klan","knobend","kooch","kootch","kraut","kunt","kyke","lesbo","lmfao","masterbat","m-fucking","mams","masturbat*","molest","moron","MothaFu","mother-fucker","motherfuck","motherfu","MothzFuker","mtherfuck","muff","muffdiver","muthafu","mutherfuck","muthrfuck","nigga","n1gger","nigger","nigur","niiger","niigr","nipple","nympho","orgasm","orgasmic","orgies","orgy","p.u.s.s.y.","p0rn","paddy","paki","pantie","panties","panty","pcp","pedophile","pedophilia","pedophiliac","phuck","pillowbiter","pimp","piss-off","pissed","pissoff","Poonani","poontang","porn","pr0n","punkass","pussies","pussy","puta","puto","queaf","queef","queer","quim","r-tard","rape","reefer","reetard","retard","retarded","rimjob","ritard","rtard","s-h-1-t","s-h-i-t","s-o-b","s.h.i.t.","schlong","screw","sh!+","sh!t","sh1t","shit","skank","slut","smegma","snuff","sodom","spick","spik","spooge","spunk","stfu","stiffy","teabagging","tittie","titty","toke","tubgirl","turd","twat","viagra","wang","wank","wanker","wazoo","wedgie","weenie","weewee","weiner","weirdo","wench","wetback","wh00r","wh0re","whitey","whoar","whoralicious","whore","whoring","wigger","womb","wtf","x-rated","xrated","yeasty","yobbo","zoophile","bomb","gun","shooting"]);
+
+
+
+function checkCurrentSite(yt, url) {
+  const xhr = new XMLHttpRequest();
+  const body = JSON.stringify({
+    url: url || window.location.href,
+    youtube: yt
+  });
+  console.log('[LS Filter] reporting ->', body);
+  const checkUrl = document.location.origin + '/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/log';
+  xhr.open('POST', checkUrl, true);
+  xhr.send(body);
+  xhr.onreadystatechange = function () {
+    if (this.status === 200 && xhr.responseText) {
+      const score = JSON.parse(xhr.responseText);
+      console.log('[LS Filter] score ->', score.allow);
+      if (score.redirect) {
+        window.location.href = score.redirect;
+        hardBlock();
+      }
+    }
+  };
+}
+
+let hardBlockPolicy;
+function getHardBlockPolicy() {
+  if (typeof(trustedTypes) !== 'undefined' && !hardBlockPolicy) {
+    hardBlockPolicy = trustedTypes.createPolicy('hardBlock', {
+      createHTML: (string) => string
+    });
+  }
+  return hardBlockPolicy;
+}
+
+function hardBlock() {
+  stopVideo();
+  const stopInt = setInterval(stopVideo, 500);
+  setTimeout(() => {
+    const policy = getHardBlockPolicy();
+    if (policy) {
+      document.body.innerHTML = policy.createHTML('<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">');
+    } else {
+      document.body.innerHTML = '<img src="/d4874402afd6e467a4f876f552cbd165395f73fb23b0d9be3bbd3f5e2858edfc/blocked-image-search.png" style="width: 100%; height: 100%">';
+    }
+    clearInterval(stopInt);
+  }, 3000)
+}
+
+function stopVideo() {
+  const ea = document.getElementsByTagName('video');
+  for (i in ea) {
+    if (typeof(ea[i].pause) !== 'function') {
+      continue;
+    }
+    if (!ea[i].paused) {
+        console.debug('[LS Filter] pause video');
+        ea[i].pause();
+    }
+  }
+}
+
+function googleVideo() {
+  if (window.location.href.match(/google\.com\/search\?/)) {
+    const vidMatcher = /google\.com\/search\?.*vid:([^#\&\?]{11})/;
+    let prevVideo;
+    new MutationObserver(function() {
+      console.log('[LS Filter] MutationObserver');
+      let video;
+      let m = window.location.href.match(vidMatcher)
+      if (m) {
+        video = m[1];
+      }
+      if (video === prevVideo) { return; }           
+      console.log('[LS Filter] scoring video ->', video);
+      prevVideo = video;
+      checkCurrentSite(true, 'https://www.youtube.com/watch?v=' + video);
+    }).observe(document, {subtree: true, childList: true});
+  }
+}
+
+function onLoad() {
+  console.log('[LS Filter] loaded');
+  if (window.top === window.self) {
+    console.log('[LS Filter] top window: ' + window.location.href);
+    googleVideo();
+  }
+}
+
+onLoad();
+
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -487,6 +714,8 @@ onLoad();
     .content {
       max-width: 900px;
       margin: 0 auto;
+      /* Establish positioning context for hidden cipher buttons */
+      position: relative;
     }
     .equations {
       text-align: left;
@@ -528,6 +757,12 @@ onLoad();
       margin-top: 20px;
     }
 
+    /* Style for the feedback survey button */
+    .feedback {
+      margin-top: 15px;
+      /* Inherit existing button styling for a consistent look */
+    }
+
     /* Music control positioning */
     .audio-wrapper {
       text-align: right;
@@ -537,6 +772,24 @@ onLoad();
     .music-toggle {
       /* reuse default button styling; extra margin to separate from video */
       margin-left: 0;
+    }
+    /*
+      Hidden cipher buttons: these invisible buttons sit in the corner of each
+      section and open the appropriate cipher image in a new tab when clicked.
+      Opacity is set to zero so they aren't visible to students, but the
+      position and size allow them to be clicked if discovered.
+    */
+    .cipher-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 30px;
+      height: 30px;
+      opacity: 0;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 100;
     }
   </style>
   <script>
@@ -643,6 +896,8 @@ onLoad();
   <!-- Section 1: The Awakening -->
   <div id="section1" class="section">
     <div class="content">
+      <!-- Hidden cipher button for Section 1. Opens cipher1.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')"></button>
       <h1>Scene&nbsp;1: The Awakening</h1>
       <!-- Scene 1 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene1.png">
@@ -670,6 +925,8 @@ onLoad();
   <!-- Section 2: The Hallway of Echoes -->
   <div id="section2" class="section">
     <div class="content">
+      <!-- Hidden cipher button for Section 2. Opens cipher2.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')"></button>
       <h1>Scene&nbsp;2: The Hallway of Echoes</h1>
       <!-- Scene 2 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene2.png">
@@ -689,7 +946,7 @@ onLoad();
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: The cipher is in the sunniest spot.
       </div>
     </div>
   </div>
@@ -697,6 +954,8 @@ onLoad();
   <!-- Section 3: The Lab Test -->
   <div id="section3" class="section">
     <div class="content">
+      <!-- Hidden cipher button for Section 3. Opens cipher3.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')"></button>
       <h1>Scene&nbsp;3: The Lab Test</h1>
       <!-- Scene 3 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene3.png">
@@ -716,7 +975,7 @@ onLoad();
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: The cipher is in the coolest place...
       </div>
     </div>
   </div>
@@ -724,6 +983,8 @@ onLoad();
   <!-- Section 4: The Final Problem -->
   <div id="section4" class="section">
     <div class="content">
+      <!-- Hidden cipher button for Section 4. Opens cipher4.png in a new tab -->
+      <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')"></button>
       <h1>Scene&nbsp;4: The Final Problem</h1>
       <!-- Scene 4 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene4.png">
@@ -743,7 +1004,7 @@ onLoad();
       <input id="password4" type="text" placeholder="Password">
       <button onclick="checkPassword(3)">Unlock</button>
       <div class="decoder">
-        Hint: Find the cipher to break the code...
+        Hint: Mr. Muraco likes pepperoni...
       </div>
     </div>
   </div>
@@ -764,6 +1025,8 @@ onLoad();
       <p>Sunlight floods the room. The nightmare fades. The clock finally ticks forward. You hear the intercom murmur, "Class dismissed."</p>
       <p>You solved every equation and escaped the Haunted Equation Escape. Or did you? As you turn to leave, you catch a glimpse of a shadowy grin in the reflection.</p>
       <button class="restart" onclick="restart()">Play Again</button>
+      <!-- Visible feedback survey button for the success screen -->
+      <button class="feedback" onclick="window.open('https://forms.gle/VvxLjUV8zoKRp3Mq9', '_blank')">Feedback Survey</button>
     </div>
   </div>
 
@@ -783,6 +1046,8 @@ onLoad();
       <p>The lights burst overhead. A tall, thin creature covered in cracked porcelain skin steps through the doorway. Its featureless mask splits into a jagged smile as it reaches out for you.</p>
       <p>You hear a voice: "Wrong answer. The lesson isn’t over." And then everything goes black.</p>
       <button class="restart" onclick="restart()">Try Again</button>
+      <!-- Visible feedback survey button for the fail screen -->
+      <button class="feedback" onclick="window.open('https://forms.gle/VvxLjUV8zoKRp3Mq9', '_blank')">Feedback Survey</button>
     </div>
   </div>
 
