@@ -567,7 +567,8 @@ onLoad();
       font-size: 14px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 100;
+      /* Ensure the cipher button appears above other elements */
+      z-index: 1000;
       text-decoration: none;
       line-height: 1;
     }
@@ -575,6 +576,21 @@ onLoad();
     /* Slightly darken the cipher button on hover to signal interactivity */
     .cipher-btn:hover {
       background-color: rgba(231, 76, 60, 0.35);
+    }
+
+    /*
+      Equation images in sections 2–4 were previously cut off due to global
+      .section img rules (max-height and object-fit).  The following rule
+      ensures equation images retain their full height and aspect ratio.
+    */
+    .equation-img {
+      object-fit: contain;
+      max-height: none;
+      height: auto;
+      width: 90%;
+      max-width: 600px;
+      margin: 10px auto;
+      display: block;
     }
   </style>
   <script>
@@ -697,7 +713,7 @@ onLoad();
       <p style="font-size:1.3em; color:#e74c3c;">"Solve it before it finds you."</p>
       <p>Below the message, several equations have appeared. Solve each equation for <em>x</em>, convert the number to a letter using <em>A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, ...</em>, and unscramble the letters to form the password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations1.png" alt="Level 1 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations1.png" alt="Level 1 equations" class="equation-img">
       <p>Type the five‑letter password below to unlock the door:</p>
       <input id="password1" type="text" placeholder="Password">
       <button onclick="checkPassword(0)">Unlock</button>
@@ -726,7 +742,7 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"It knows your mistakes."</p>
       <p>On the wall, more equations appear. Solve them, convert the numbers to letters, and unscramble to find the three‑letter password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations2.png" alt="Level 2 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations2.png" alt="Level 2 equations" class="equation-img">
       <p>Type the password to hurry down the hall:</p>
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
@@ -755,7 +771,7 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"Every wrong answer brings&nbsp;<em>them</em>&nbsp;closer."</p>
       <p>Solve each equation below. Convert each <em>x</em> value to a letter. Unscramble the six letters to find the password that will unlock the next door.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations3.png" alt="Level 3 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations3.png" alt="Level 3 equations" class="equation-img">
       <p>Type the six‑letter password to escape the lab:</p>
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
@@ -784,7 +800,7 @@ onLoad();
       <p style="font-size:1.2em; color:#e74c3c;">"One last test. Get it right… or repeat forever."</p>
       <p>Solve each equation, convert the numbers to letters, and unscramble the six letters to find the final password.</p>
       <!-- Display the equation sheet for this level -->
-      <img src="equations4.png" alt="Level 4 equations" style="width:90%; max-width:600px; margin:10px auto; display:block;">
+      <img src="equations4.png" alt="Level 4 equations" class="equation-img">
       <p>Type the final six‑letter password:</p>
       <input id="password4" type="text" placeholder="Password">
       <button onclick="checkPassword(3)">Unlock</button>
