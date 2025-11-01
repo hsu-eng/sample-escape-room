@@ -538,13 +538,17 @@ onLoad();
 
     /* Music control positioning */
     .audio-wrapper {
-      text-align: right;
+      /* Arrange the cipher and music buttons on one line underneath the video */
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
       margin-top: 10px;
       margin-bottom: 20px;
     }
     .music-toggle {
-      /* reuse default button styling; extra margin to separate from video */
-      margin-left: 0;
+      /* Give the music button some separation if needed */
+      margin-left: auto;
     }
     /*
       Cipher buttons: these sit in the corner of each section and open the
@@ -584,11 +588,13 @@ onLoad();
       ensures equation images retain their full height and aspect ratio.
     */
     .equation-img {
+      /* Scale the equation images proportionally and ensure the full image is visible on small screens.  
+         Limit the maximum height relative to the viewport and adjust width so the image shrinks to fit.  */
       object-fit: contain;
-      max-height: none;
+      width: auto;
+      max-width: 90%;
       height: auto;
-      width: 90%;
-      max-width: 600px;
+      max-height: 60vh;
       margin: 10px auto;
       display: block;
     }
@@ -705,6 +711,8 @@ onLoad();
       </video>
       <div class="audio-wrapper">
         <audio id="music1" class="scene-audio" src="track1.mp3" loop></audio>
+        <!-- Place the cipher button alongside the music button so it sits to the left -->
+        <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')">Cipher</button>
         <button class="music-toggle" onclick="toggleAudio('music1', this)">Music On</button>
       </div>
       <p>You wake up at your desk in a dark, empty classroom. The clock reads <strong>67:67</strong>&nbsp;&mdash;&nbsp;an impossible time. The door won&rsquo;t budge. A flickering message on the board explains your challenge:</p>
@@ -715,8 +723,6 @@ onLoad();
       <p>Type the five‑letter password below to unlock the door:</p>
       <input id="password1" type="text" placeholder="Password">
       <button onclick="checkPassword(0)">Unlock</button>
-      <!-- Move the cipher button here so students can discover it instead of a textual hint -->
-      <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')">Cipher</button>
     </div>
   </div>
 
@@ -731,6 +737,7 @@ onLoad();
       </video>
       <div class="audio-wrapper">
         <audio id="music2" class="scene-audio" src="track2.mp3" loop></audio>
+        <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')">Cipher</button>
         <button class="music-toggle" onclick="toggleAudio('music2', this)">Music On</button>
       </div>
       <p>The door creaks open, and you step into a red‑lit hallway that stretches into the fog. Suddenly, a crazed clown teacher jumps out from a locker and then vanishes down the hall. Your heart races as you steady yourself. Messages scrawled on the lockers whisper:</p>
@@ -741,8 +748,7 @@ onLoad();
       <p>Type the password to hurry down the hall:</p>
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
-      <!-- Cipher button placed after the password for Section 2 -->
-      <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')">Cipher</button>
+      
     </div>
   </div>
 
@@ -757,6 +763,7 @@ onLoad();
       </video>
       <div class="audio-wrapper">
         <audio id="music3" class="scene-audio" src="track3.mp3" loop></audio>
+        <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')">Cipher</button>
         <button class="music-toggle" onclick="toggleAudio('music3', this)">Music On</button>
       </div>
       <p>You duck into a lab to hide. Papers float through the air, and you swear you see not only the clown but another monstrous figure lurking in the shadows. A cold voice from the intercom crackles:</p>
@@ -767,8 +774,7 @@ onLoad();
       <p>Type the six‑letter password to escape the lab:</p>
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
-      <!-- Cipher button placed after the password for Section 3 -->
-      <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')">Cipher</button>
+      
     </div>
   </div>
 
@@ -783,6 +789,7 @@ onLoad();
       </video>
       <div class="audio-wrapper">
         <audio id="music4" class="scene-audio" src="track4.mp3" loop></audio>
+        <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')">Cipher</button>
         <button class="music-toggle" onclick="toggleAudio('music4', this)">Music On</button>
       </div>
       <p>The final classroom door slams shut behind you. As you catch your breath, the monster lunges at you in one last jump scare&nbsp;&mdash;&nbsp;then disappears, leaving you with a final set of equations. Papers whirl around as if caught in a storm. A shadow blocks the only exit. The voice whispers:</p>
@@ -793,8 +800,7 @@ onLoad();
       <p>Type the final six‑letter password:</p>
       <input id="password4" type="text" placeholder="Password">
       <button onclick="checkPassword(3)">Unlock</button>
-      <!-- Cipher button placed after the password for Section 4 -->
-      <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')">Cipher</button>
+      
     </div>
   </div>
 
