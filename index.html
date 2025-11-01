@@ -697,8 +697,6 @@ onLoad();
   <!-- Section 1: The Awakening -->
   <div id="section1" class="section">
     <div class="content">
-      <!-- Cipher button for Section 1. Opens cipher1.png in a new tab -->
-      <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;1: The Awakening</h1>
       <!-- Scene 1 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene1.png">
@@ -717,17 +715,14 @@ onLoad();
       <p>Type the five‑letter password below to unlock the door:</p>
       <input id="password1" type="text" placeholder="Password">
       <button onclick="checkPassword(0)">Unlock</button>
-      <div class="decoder">
-        Hint: A&nbsp;=&nbsp;1, B&nbsp;=&nbsp;2, C&nbsp;=&nbsp;3, ...
-      </div>
+      <!-- Move the cipher button here so students can discover it instead of a textual hint -->
+      <button class="cipher-btn" onclick="window.open('cipher1.png','_blank')">Cipher</button>
     </div>
   </div>
 
   <!-- Section 2: The Hallway of Echoes -->
   <div id="section2" class="section">
     <div class="content">
-      <!-- Cipher button for Section 2. Opens cipher2.png in a new tab -->
-      <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;2: The Hallway of Echoes</h1>
       <!-- Scene 2 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene2.png">
@@ -746,17 +741,14 @@ onLoad();
       <p>Type the password to hurry down the hall:</p>
       <input id="password2" type="text" placeholder="Password">
       <button onclick="checkPassword(1)">Continue</button>
-      <div class="decoder">
-        Hint: The cipher is in the sunniest spot.
-      </div>
+      <!-- Cipher button placed after the password for Section 2 -->
+      <button class="cipher-btn" onclick="window.open('cipher2.png','_blank')">Cipher</button>
     </div>
   </div>
 
   <!-- Section 3: The Lab Test -->
   <div id="section3" class="section">
     <div class="content">
-      <!-- Cipher button for Section 3. Opens cipher3.png in a new tab -->
-      <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;3: The Lab Test</h1>
       <!-- Scene 3 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene3.png">
@@ -775,17 +767,14 @@ onLoad();
       <p>Type the six‑letter password to escape the lab:</p>
       <input id="password3" type="text" placeholder="Password">
       <button onclick="checkPassword(2)">Unlock</button>
-      <div class="decoder">
-        Hint: The cipher is in the coolest place...
-      </div>
+      <!-- Cipher button placed after the password for Section 3 -->
+      <button class="cipher-btn" onclick="window.open('cipher3.png','_blank')">Cipher</button>
     </div>
   </div>
 
   <!-- Section 4: The Final Problem -->
   <div id="section4" class="section">
     <div class="content">
-      <!-- Cipher button for Section 4. Opens cipher4.png in a new tab -->
-      <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')">Cipher</button>
       <h1>Scene&nbsp;4: The Final Problem</h1>
       <!-- Scene 4 video: click to play (poster image shown before playback) -->
       <video controls width="100%" poster="scene4.png">
@@ -804,9 +793,8 @@ onLoad();
       <p>Type the final six‑letter password:</p>
       <input id="password4" type="text" placeholder="Password">
       <button onclick="checkPassword(3)">Unlock</button>
-      <div class="decoder">
-        Hint: Mr. Muraco likes pepperoni...
-      </div>
+      <!-- Cipher button placed after the password for Section 4 -->
+      <button class="cipher-btn" onclick="window.open('cipher4.png','_blank')">Cipher</button>
     </div>
   </div>
 
